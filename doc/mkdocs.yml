@@ -1,0 +1,29 @@
+site_name: Docs49
+site_author: Bernhard Boser
+site_description: Project Documentation and Blog
+site_url: https://docs49.org
+# repo is private!
+# repo_url: https://github.com/iot49/docs49
+# repo_name: iot49/docs49
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.indexes
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - search.share
+
+plugins:
+  - blog
+  - search
+
+nav:
+  - Home: index.md
+  - Blocks49: blocks49.md
+  - Rails49: rails49.md
+  - Blog:
+     - blog/index.md

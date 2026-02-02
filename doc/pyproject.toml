@@ -1,0 +1,9 @@
+[project]
+name = "docs49"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.12.2"
+dependencies = [
+    "mkdocs-blog-plugin>=0.25",
+    "mkdocs-material>=9.7.1",
+]
