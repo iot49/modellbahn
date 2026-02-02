@@ -240,7 +240,7 @@
                 <h2 class="panel-title">Publish</h2>
                 <div class="form-group">
                     <label for="pubTopic">Topic</label>
-                    <input type="text" id="pubTopic" placeholder="rails49/dcc-ex/req" value="rails49/dcc-ex/req">
+                    <input type="text" id="pubTopic" placeholder="rails49/dcc-ex/cmd" value="rails49/dcc-ex/cmd">
                 </div>
                 <div class="form-group" style="margin-top: 1rem;">
                     <label for="pubPayload">Message</label>
@@ -281,7 +281,7 @@
         let messages = [];
 
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-        const mqttUrl = `${protocol}://mqtt.${RAILS_DOMAIN}/mqtt`;
+        const mqttUrl = `${protocol}://mqtt.${RAILS_DOMAIN}`;
         
         console.log("Connecting to MQTT at", mqttUrl);
         const client = mqtt.connect(mqttUrl);
@@ -289,7 +289,8 @@
         client.on('connect', () => {
             statusDot.classList.add('connected');
             statusText.innerText = 'Connected';
-            client.subscribe('#');
+            client.subscribe('rails49/dcc-ex/status/#');
+            client.subscribe('$SYS/#');
         });
 
         client.on('error', (err) => {

@@ -10,9 +10,9 @@ load_dotenv()
 
 DOMAIN = os.getenv("RAILS_DOMAIN", "rails49.org")
 TCP_PORT = 2560
-TOPIC_REQ = "rails49/dcc-ex/req"
-TOPIC_STA = "rails49/dcc-ex/sta/#"
-TOPIC_CMD = "rails49/dcc-ex/cmd"
+TOPIC_REQ = "rails49/dcc-ex/cmd"
+TOPIC_STA = "rails49/dcc-ex/status/#"
+TOPIC_CMD = "rails49/dcc-ex/status/cmd"
 
 
 class BridgeTester:

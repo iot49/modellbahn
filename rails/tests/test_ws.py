@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DOMAIN = os.getenv("RAILS_DOMAIN", "rails49.org")
-WS_URL = f"wss://mqtt.{DOMAIN}/mqtt"
+WS_URL = f"wss://mqtt.{DOMAIN}"
 
 
 async def test_ws_connection():

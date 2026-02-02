@@ -9,8 +9,8 @@ load_dotenv()
 
 DOMAIN = os.getenv("RAILS_DOMAIN", "rails49.org")
 TCP_PORT = 2560
-MQTT_REQ_TOPIC = "rails49/dcc-ex/req"
-MQTT_STA_TOPIC = "rails49/dcc-ex/sta/#"
+MQTT_REQ_TOPIC = "rails49/dcc-ex/cmd"
+MQTT_STA_TOPIC = "rails49/dcc-ex/status/#"
 
 
 def test_dcc_tcp():

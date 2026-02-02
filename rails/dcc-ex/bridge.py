@@ -12,8 +12,8 @@ SERIAL_BAUD = int(os.getenv("SERIAL_BAUD", "115200"))
 MQTT_HOST = os.getenv("MQTT_HOST", "mqtt")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
 TCP_PORT = int(os.getenv("TCP_PORT", "2560"))
-TOP_REQ = "rails49/dcc-ex/req"
-TOP_STA = "rails49/dcc-ex/sta/"
+TOP_CMD = "rails49/dcc-ex/cmd"
+TOP_STATUS = "rails49/dcc-ex/status/"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger("dcc-ex-bridge")
@@ -51,7 +51,7 @@ class Bridge:
         except:
             self.mqtt_client = mqtt.Client()
         self.mqtt_client.on_connect = (
-            lambda c, u, f, r, p=None: c.subscribe(TOP_REQ) if r == 0 else None
+            lambda c, u, f, r, p=None: c.subscribe(TOP_CMD) if r == 0 else None
         )
         self.mqtt_client.on_message = self.on_mqtt_message
         self.mqtt_client.connect(MQTT_HOST, MQTT_PORT, 60)
@@ -64,7 +64,7 @@ class Bridge:
                 return
             clean = wrap_message(raw)
             logger.info(f"MQTT -> Bridge: {clean}")
-            self.mqtt_client.publish(f"{TOP_STA}req", clean)
+            self.mqtt_client.publish(f"{TOP_STATUS}cmd", clean)
             if self.loop:
                 self.loop.call_soon_threadsafe(
                     lambda: asyncio.create_task(self.relay_inbound(clean))
@@ -133,7 +133,7 @@ class Bridge:
         content = msg[1:-1].strip()
         if content:
             opcode = content[0]
-            self.mqtt_client.publish(f"{TOP_STA}{opcode}", msg)
+            self.mqtt_client.publish(f"{TOP_STATUS}{opcode}", msg)
         await self.broadcast_to_tcp(msg)
 
     async def handle_tcp_client(self, r, w):
@@ -153,7 +153,7 @@ class Bridge:
                         raw = buffer[start : end + 1]
                         clean = wrap_message(raw)
                         logger.info(f"TCP -> Bridge: {clean}")
-                        self.mqtt_client.publish("rails49/dcc-ex/cmd", clean)
+                        self.mqtt_client.publish(f"{TOP_STATUS}cmd", clean)
                         await self.send_to_serial(clean)
                         buffer = buffer[end + 1 :]
                     else:

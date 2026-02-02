@@ -75,7 +75,7 @@ check_status $? "MQTTS Port 8883 TLS Handshake"
 
 # 9. MQTT WebSockets (443)
 uv run python3 tests/test_ws.py
-check_status $? "MQTT WebSocket Handshake (wss://mqtt.$DOMAIN/mqtt)"
+check_status $? "MQTT WebSocket Handshake (wss://mqtt.$DOMAIN)"
 
 # 10. DCC-EX Service Functional Test (TCP & MQTT)
 uv run python3 tests/test_dcc.py
