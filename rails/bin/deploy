@@ -1,0 +1,31 @@
+#!/bin/bash
+set -e
+
+# Change to the directory where the script is located to ensure paths are relative
+cd "$(dirname "$0")/.."
+
+# Load environment variables from .env
+if [ -f .env ]; then
+  echo "--- Loading variables from .env"
+  # Use a subshell to avoid polluting the current shell
+  export $(grep -v '^#' .env | xargs)
+else
+  echo "--- ERROR: .env file not found in rails directory"
+  exit 1
+fi
+
+echo "--- Generating configuration from templates..."
+# Expand variables in templates
+# We explicitly list the variables to avoid accidental expansion of JS template literals
+VARS='$RAILS_DOMAIN:$PUID:$PGID:$TZ:$VSCODE_AUTH:$CF_API_EMAIL'
+envsubst "$VARS" < docker-compose.template.yml > docker-compose.yml
+envsubst "$VARS" < traefik/traefik.template.yaml > traefik/traefik.yaml
+envsubst "$VARS" < traefik/dynamic_conf.template.yaml > traefik/dynamic_conf.yaml
+envsubst "$VARS" < ui/index.template.html > ui/index.html
+
+echo "--- Updating service variables on balenaCloud..."
+# We still keep the sensitive token in Balena variables for security
+balena env set CF_DNS_API_TOKEN "$CF_DNS_API_TOKEN" --fleet $BALENA_FLEET --service traefik --quiet
+
+echo "--- Pushing application to $BALENA_FLEET..."
+balena push $BALENA_FLEET

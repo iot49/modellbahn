@@ -1,0 +1,92 @@
+version: '2.1'
+
+services:
+  traefik:
+    build: ./traefik
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8883:8883"
+      - "2560:2560"
+    environment:
+      - CF_DNS_API_TOKEN
+      - CF_API_EMAIL
+    volumes:
+      - traefik-certs:/letsencrypt
+    labels:
+      io.balena.features.balena-socket: '1'
+    restart: always
+
+  mqtt:
+    build: ./mqtt
+    ports:
+      - "1883:1883"
+    labels:
+      - "traefik.enable=true"
+      # MQTT via WebSockets (for the UI)
+      - "traefik.http.routers.mqttws.rule=Host(`mqtt.${RAILS_DOMAIN}`)"
+      - "traefik.http.routers.mqttws.entrypoints=websecure"
+      - "traefik.http.routers.mqttws.tls.certresolver=myresolver"
+      - "traefik.http.services.mqttws.loadbalancer.server.port=9001"
+      # MQTTS via TCP
+      - "traefik.tcp.routers.mqtttls.rule=HostSNI(`mqtt.${RAILS_DOMAIN}`)"
+      - "traefik.tcp.routers.mqtttls.entrypoints=mqtts"
+      - "traefik.tcp.routers.mqtttls.tls.certresolver=myresolver"
+      - "traefik.tcp.services.mqtttls.loadbalancer.server.port=1883"
+    restart: always
+
+  ui:
+    build: ./ui
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ui.rule=Host(`ui.${RAILS_DOMAIN}`) || Host(`${RAILS_DOMAIN}`)"
+      - "traefik.http.routers.ui.entrypoints=websecure"
+      - "traefik.http.routers.ui.tls.certresolver=myresolver"
+      - "traefik.http.services.ui.loadbalancer.server.port=80"
+    restart: always
+
+  dcc-ex:
+    build: ./dcc-ex
+    privileged: true
+    devices:
+      - "/dev/ttyUSB0:/dev/ttyUSB0"
+    volumes:
+      - dcc-code:/app
+    environment:
+      - SERIAL_PORT=/dev/ttyUSB0
+      - SERIAL_BAUD=115200
+      - MQTT_HOST=mqtt
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.dcc.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.dcc.entrypoints=dcc"
+      - "traefik.tcp.services.dcc.loadbalancer.server.port=2560"
+    working_dir: /app
+    restart: always
+
+  vscode:
+    build:
+      context: .
+      dockerfile: ./vscode/Dockerfile
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - AUTH=${VSCODE_AUTH} 
+    volumes:
+      - vscode-config:/config
+      - workspace:/workspace
+      - dcc-code:/workspace/dcc-ex
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vscode.rule=Host(`code.${RAILS_DOMAIN}`)"
+      - "traefik.http.routers.vscode.entrypoints=websecure"
+      - "traefik.http.routers.vscode.tls.certresolver=myresolver"
+      - "traefik.http.services.vscode.loadbalancer.server.port=8443"
+    restart: always
+
+volumes:
+  vscode-config:
+  workspace:
+  traefik-certs:
+  dcc-code:

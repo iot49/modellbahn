@@ -1,0 +1,7 @@
+# Generated deployment files
+docker-compose.yml
+traefik/traefik.yaml
+traefik/dynamic_conf.yaml
+ui/index.html
+
+*.md
