@@ -4,6 +4,6 @@
 
 It provides support for:
 
-* block occupancy detection with [blocks49](blocks49.md)
+* block occupancy detection with [blocks49](blocks.md)
 * [jmri](https://jmri.org/)
 * [rocrail](https://www.rocrail.online/)

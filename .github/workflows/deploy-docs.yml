@@ -1,0 +1,32 @@
+name: Deploy Documentation
+
+on:
+  push:
+    tags:
+      - 'doc-v*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: "doc/uv.lock"
+
+      - name: Build and Check Links
+        working-directory: doc
+        run: |
+          uv run mkdocs build --strict
+          uv run mkdocs-linkcheck site
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy doc/site --project-name=rails49-doc

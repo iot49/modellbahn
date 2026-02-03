@@ -1,0 +1,24 @@
+#!/bin/bash
+set -e
+
+# Configuration
+PROJECT_NAME="rails49-doc"
+DOC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+echo "🚀 Starting documentation deployment..."
+
+cd "$DOC_DIR"
+
+# 1. Build the site
+echo "🏗️  Building site with mkdocs..."
+uv run mkdocs build --strict
+
+# 2. Run link checker
+echo "🔍 Checking links..."
+uv run mkdocs-linkcheck site
+
+# 3. Deploy to Cloudflare Pages
+echo "☁️  Deploying to Cloudflare Pages..."
+npx wrangler pages deploy site --project-name "$PROJECT_NAME"
+
+echo "✅ Deployment complete!"
