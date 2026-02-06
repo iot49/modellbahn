@@ -36,18 +36,17 @@ check_status $? "HTTP to HTTPS Redirection (ui.$DOMAIN)"
 curl -s -fL "https://ui.$DOMAIN" | grep -qi "MQTT"
 check_status $? "UI Page Accessibility (https://ui.$DOMAIN)"
 
-# 3. Base Domain Accessibility
-curl -s -fL "https://$DOMAIN" | grep -qi "MQTT"
-check_status $? "Base Domain Accessibility (https://$DOMAIN)"
+# 3. Base Domain Accessibility (Ignored - used otherwise)
+# curl -s -fL "https://$DOMAIN" | grep -qi "MQTT"
+# check_status $? "Base Domain Accessibility (https://$DOMAIN)"
 
 # 4. VS Code Accessibility 
 curl -s -o /dev/null -w "%{http_code}" "https://code.$DOMAIN" | grep -E "200|301|302|401" > /dev/null
 check_status $? "VS Code Accessibility (https://code.$DOMAIN)"
 
-# 5. Traefik Dashboard Accessibility (via IP + Host header)
-# We use -k because the cert might not be ready or DNS might be missing
-curl -s -o /dev/null -w "%{http_code}" -k -H "Host: traefik.$DOMAIN" "https://192.168.8.235/dashboard/" | grep -q "200"
-check_status $? "Traefik Dashboard Accessibility (Internal Check)"
+# 5. Traefik Dashboard Accessibility
+curl -s -o /dev/null -w "%{http_code}" -k "https://traefik.$DOMAIN/dashboard/" | grep -q "200"
+check_status $? "Traefik Dashboard Accessibility (https://traefik.$DOMAIN)"
 
 echo ""
 echo -e "${BLUE}--- Testing SSL Certificates ---${NC}"

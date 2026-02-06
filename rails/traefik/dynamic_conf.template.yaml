@@ -1,7 +1,7 @@
 http:
   routers:
     wildcard-certs:
-      rule: "Host(`${RAILS_DOMAIN}`) || HostRegexp(`{subdomain:[a-z]+}.${RAILS_DOMAIN}`)"
+      rule: "HostRegexp(`{subdomain:[a-z]+}.${RAILS_DOMAIN}`)"
       priority: 1
       entryPoints:
         - websecure
@@ -9,9 +9,7 @@ http:
       tls:
         certResolver: myresolver
         domains:
-          - main: "${RAILS_DOMAIN}"
-            sans:
-              - "*.${RAILS_DOMAIN}"
+          - main: "*.${RAILS_DOMAIN}"
 
     traefik-dashboard:
       rule: "Host(`traefik.${RAILS_DOMAIN}`)"

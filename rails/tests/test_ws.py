@@ -10,7 +10,12 @@ DOMAIN = os.getenv("RAILS_DOMAIN", "rails49.org")
 WS_URL = f"wss://mqtt.{DOMAIN}"
 
 
-async def test_ws_connection():
+async def test_ws_connection() -> bool:
+    """Test the WebSocket connection to the MQTT broker.
+
+    Returns:
+        bool: True if connection is successful, False otherwise.
+    """
     try:
         # Use a subprotocol 'mqtt' which NanoMQ expects
         async with websockets.connect(WS_URL, subprotocols=["mqtt"]) as _:

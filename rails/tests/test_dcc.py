@@ -16,8 +16,10 @@ MQTT_STA_TOPIC = "rails49/dcc-ex/status/#"
 def test_dcc_tcp():
     print(f"Testing DCC-EX TCP on {DOMAIN}:{TCP_PORT}...")
     try:
-        with socket.create_connection((DOMAIN, TCP_PORT), timeout=5) as sock:
-            print("✅ DCC-EX TCP connection successful")
+        # Use a subdomain (like ui.DOMAIN) because the root domain might point elsewhere
+        host = f"ui.{DOMAIN}"
+        with socket.create_connection((host, TCP_PORT), timeout=5) as sock:
+            print(f"✅ DCC-EX TCP connection successful to {host}")
             # DCC-EX typically sends a version or status string on connect
             # such as <iDCC-EX ...>
             sock.settimeout(2)

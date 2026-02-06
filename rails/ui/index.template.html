@@ -164,21 +164,26 @@
         }
 
         .log-item {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 0.5rem;
-            padding: 0.75rem;
-            border-left: 3px solid var(--primary);
-            animation: fadeIn 0.3s ease-out;
+            display: grid;
+            grid-template-columns: 200px 1fr 100px;
+            gap: 1rem;
+            align-items: center;
+            padding: 0.4rem 0.75rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .log-item:hover {
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .log-item.retained {
-            border-left-color: #f59e0b;
-            background: rgba(245, 158, 11, 0.05);
+            background: rgba(245, 158, 11, 0.03);
         }
 
         .log-item.system {
-            border-left-color: #06b6d4;
-            background: rgba(6, 182, 212, 0.05);
+            background: rgba(6, 182, 212, 0.03);
         }
 
         .badge {
@@ -198,26 +203,25 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .log-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-bottom: 0.25rem;
+        .log-topic { 
+            font-weight: 600; 
+            color: #818cf8; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        .log-topic { font-weight: 600; color: #818cf8; }
-
-        /* Use white-space: pre-wrap to preserve spaces without interpreting HTML */
         .log-payload {
             font-family: monospace;
-            background: rgba(0,0,0,0.2);
-            padding: 0.5rem;
-            border-radius: 0.25rem;
-            margin-top: 0.25rem;
             word-break: break-all;
-            min-height: 1.25rem;
-            white-space: pre-wrap; 
+            white-space: pre-wrap;
+            color: var(--text);
+        }
+
+        .log-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: right;
         }
 
         ::-webkit-scrollbar { width: 6px; }
@@ -244,7 +248,7 @@
                 </div>
                 <div class="form-group" style="margin-top: 1rem;">
                     <label for="pubPayload">Message</label>
-                    <textarea id="pubPayload" rows="3" placeholder="e.g. J Q"></textarea>
+                    <input type="text" id="pubPayload" placeholder="e.g. J Q">
                 </div>
                 <button id="sendBtn" style="margin-top: 1rem; width: 100%;">Publish Message</button>
             </div>
@@ -307,16 +311,21 @@
                 id: Date.now(),
                 topic: topic,
                 payload: payloadStr,
-                time: new Date().toLocaleTimeString(),
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
                 retained: packet.retain,
                 isSystem: topic.startsWith('$SYS')
             };
-            messages.unshift(message);
-            if (messages.length > 100) messages.pop();
+            messages.push(message); // New at bottom
+            if (messages.length > 200) messages.shift();
             renderLogs();
+            scrollToBottom();
         });
 
-        sendBtn.onclick = () => {
+        function scrollToBottom() {
+            logList.scrollTop = logList.scrollHeight;
+        }
+
+        function publishMessage() {
             const topic = pubTopicInput.value;
             let payload = pubPayloadInput.value.trim();
             if (topic && payload) {
@@ -325,10 +334,21 @@
                     if (!payload.startsWith('<')) payload = '<' + payload;
                     if (!payload.endsWith('>')) payload = payload + '>';
                 }
+                console.log(`Publishing: ${topic} -> ${payload}`);
                 client.publish(topic, payload);
-                pubPayloadInput.value = '';
             }
-        };
+        }
+
+        sendBtn.onclick = publishMessage;
+
+        [pubTopicInput, pubPayloadInput].forEach(el => {
+            el.onkeydown = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    publishMessage();
+                }
+            };
+        });
 
         function escapeHTML(str) {
             return str.replace(/[&<>"']/g, function(m) {
@@ -358,19 +378,15 @@
                     if (m.isSystem) classes += ' system';
 
                     let badges = '';
-                    if (m.retained) badges += '<span class="badge badge-retained">Retained</span>';
-                    if (m.isSystem) badges += '<span class="badge badge-system">System</span>';
-
-                    // Using escapeHTML and ensuring it is treated as text
+                    if (m.retained) badges += '<span class="badge badge-retained" title="Retained">R</span>';
+                    
                     const safePayload = escapeHTML(m.payload);
 
                     return `
                         <div class="${classes}">
-                            <div class="log-header">
-                                <span class="log-topic">${m.topic}${badges}</span>
-                                <span>${m.time}</span>
-                            </div>
+                            <div class="log-topic" title="${m.topic}">${badges}${m.topic}</div>
                             <div class="log-payload">${safePayload}</div>
+                            <div class="log-time">${m.time}</div>
                         </div>
                     `;
                 }).join('');

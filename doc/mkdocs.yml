@@ -17,10 +17,46 @@ theme:
 plugins:
   - blog
   - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [../rails, ../bahn]
+
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_div_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+
+extra_javascript:
+  - https://unpkg.com/mermaid@10.4.0/dist/mermaid.min.js
+  - js/mermaid-init.js
 
 nav:
   - Home: index.md
-  - Blocks49: blocks.md
-  - Rails49: rails.md
+  - Code:
+    - Overview: code/concepts.md
+    - Rails:
+      - Overview: code/rails/index.md
+      - Installation: code/rails/installation.md
+      - Development: code/rails/development.md
+      - API Reference: code/rails/api.md
+    - Documentation:
+      - Overview: code/doc/index.md
+      - Installation: code/doc/installation.md
+      - Development: code/doc/development.md
+  - Scratchpad:
+      - 2-Port-Sense: neye/2-port-sense.md
+  - Blocks:
+      - Overview: blocks.md
+  - Rails:
+      - Overview: rails.md
   - Blog:
-     - blog/index.md
+      - blog/index.md
