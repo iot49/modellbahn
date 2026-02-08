@@ -1,0 +1,5 @@
+rocrail-data-local/
+rocrail-data-evili/
+*.local.yml
+*.evili.yml
+.env

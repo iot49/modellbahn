@@ -82,6 +82,7 @@ class Bridge:
     async def relay_inbound(self, msg: str, mqtt_echo_topic: str = None):
         """Relay a validated <msg> to Serial and all TCP clients. Optionally echo to MQTT."""
         if mqtt_echo_topic:
+            logger.info(f"Bridge -> MQTT [{mqtt_echo_topic}]: {msg}")
             self.mqtt_client.publish(mqtt_echo_topic, msg)
         await asyncio.gather(self.send_to_serial(msg), self.broadcast_to_tcp(msg))
 
@@ -156,7 +157,9 @@ class Bridge:
             elif opcode == "+":
                 topic_suffix = "plus"
 
-            self.mqtt_client.publish(f"{TOP_STATUS}{topic_suffix}", msg)
+            topic = f"{TOP_STATUS}{topic_suffix}"
+            logger.info(f"Bridge -> MQTT [{topic}]: {msg}")
+            self.mqtt_client.publish(topic, msg)
         await self.broadcast_to_tcp(msg)
 
     async def handle_tcp_client(self, r, w):
