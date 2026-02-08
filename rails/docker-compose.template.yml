@@ -90,24 +90,10 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
-      - SCREEN_WIDTH=1920
-      - SCREEN_HEIGHT=1080
     volumes:
       - rocrail-data:/config
     labels:
       - "traefik.enable=true"
-      # Rocview via WebTop (Desktop GUI)
-      - "traefik.http.routers.rocrail.rule=Host(`rocrail.${RAILS_DOMAIN}`)"
-      - "traefik.http.routers.rocrail.entrypoints=websecure"
-      - "traefik.http.routers.rocrail.tls.certresolver=myresolver"
-      - "traefik.http.routers.rocrail.service=rocrail"
-      - "traefik.http.services.rocrail.loadbalancer.server.port=3000"
-      # Rocweb (Mobile/Web Interface)
-      - "traefik.http.routers.rocweb.rule=Host(`rocweb.${RAILS_DOMAIN}`)"
-      - "traefik.http.routers.rocweb.entrypoints=websecure"
-      - "traefik.http.routers.rocweb.tls.certresolver=myresolver"
-      - "traefik.http.routers.rocweb.service=rocweb"
-      - "traefik.http.services.rocweb.loadbalancer.server.port=8088"
       # Rocrail Core (Native Client Protocol)
       - "traefik.tcp.routers.rocrail-core.rule=HostSNI(`*`)"
       - "traefik.tcp.routers.rocrail-core.entrypoints=rocrail"
