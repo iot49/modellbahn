@@ -18,6 +18,8 @@ entryPoints:
     address: ":8883"
   dcc:
     address: ":2560"
+  rocrail:
+    address: ":8051"
 
 providers:
   docker:

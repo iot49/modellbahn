@@ -149,8 +149,14 @@ class Bridge:
         content = msg[1:-1].strip()
         if content:
             opcode = content[0]
-            # All hardware traffic goes to rails49/dcc-ex/status/<OPCODE>
-            self.mqtt_client.publish(f"{TOP_STATUS}{opcode}", msg)
+            # Handle opcodes that are MQTT wildcards (#, +)
+            topic_suffix = opcode
+            if opcode == "#":
+                topic_suffix = "hash"
+            elif opcode == "+":
+                topic_suffix = "plus"
+
+            self.mqtt_client.publish(f"{TOP_STATUS}{topic_suffix}", msg)
         await self.broadcast_to_tcp(msg)
 
     async def handle_tcp_client(self, r, w):
@@ -195,6 +201,10 @@ class Bridge:
 
     async def run(self):
         self.loop = asyncio.get_running_loop()
+        import serial.tools.list_ports
+
+        ports = serial.tools.list_ports.comports()
+        logger.info(f"Available serial ports: {[p.device for p in ports]}")
         await self.connect_mqtt()
         server = await asyncio.start_server(self.handle_tcp_client, "0.0.0.0", TCP_PORT)
         logger.info(f"Bridge online. TCP:{TCP_PORT} MQTT:{MQTT_HOST}")

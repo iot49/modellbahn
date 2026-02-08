@@ -8,6 +8,7 @@ services:
       - "443:443"
       - "8883:8883"
       - "2560:2560"
+      - "8051:8051"
     environment:
       - CF_DNS_API_TOKEN
       - CF_API_EMAIL
@@ -65,9 +66,7 @@ services:
     restart: always
 
   vscode:
-    build:
-      context: .
-      dockerfile: ./vscode/Dockerfile
+    build: ./vscode
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -84,9 +83,40 @@ services:
       - "traefik.http.routers.vscode.tls.certresolver=myresolver"
       - "traefik.http.services.vscode.loadbalancer.server.port=8443"
     restart: always
-
+ 
+  rocrail:
+    build: ./rocrail
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - SCREEN_WIDTH=1920
+      - SCREEN_HEIGHT=1080
+    volumes:
+      - rocrail-data:/config
+    labels:
+      - "traefik.enable=true"
+      # Rocview via WebTop (Desktop GUI)
+      - "traefik.http.routers.rocrail.rule=Host(`rocrail.${RAILS_DOMAIN}`)"
+      - "traefik.http.routers.rocrail.entrypoints=websecure"
+      - "traefik.http.routers.rocrail.tls.certresolver=myresolver"
+      - "traefik.http.routers.rocrail.service=rocrail"
+      - "traefik.http.services.rocrail.loadbalancer.server.port=3000"
+      # Rocweb (Mobile/Web Interface)
+      - "traefik.http.routers.rocweb.rule=Host(`rocweb.${RAILS_DOMAIN}`)"
+      - "traefik.http.routers.rocweb.entrypoints=websecure"
+      - "traefik.http.routers.rocweb.tls.certresolver=myresolver"
+      - "traefik.http.routers.rocweb.service=rocweb"
+      - "traefik.http.services.rocweb.loadbalancer.server.port=8088"
+      # Rocrail Core (Native Client Protocol)
+      - "traefik.tcp.routers.rocrail-core.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.rocrail-core.entrypoints=rocrail"
+      - "traefik.tcp.services.rocrail-core.loadbalancer.server.port=8051"
+    restart: always
+ 
 volumes:
   vscode-config:
   workspace:
   traefik-certs:
   dcc-code:
+  rocrail-data:
